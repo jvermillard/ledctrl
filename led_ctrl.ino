@@ -12,6 +12,8 @@
 #define ETOR5_PIN 12
 #define ETOR6_PIN 13
 
+#define PSU_PIN A0
+
 #define MAX_USHORT 65535
 
 
@@ -27,7 +29,7 @@
 #define PUSH 1
 #define CLICK 2
 
-unsigned char log_table[52] = {1,1,1,1,2,2,2,2,2,3,3,3,4,4,5,5,6,6,7,8,9,10,11,12,14,15,17,19,21,23,26,29,32,36,40,45,50,56,62,69,77,86,96,107,119,133,148,165,184,205,229,255};
+unsigned char log_table[52] = {0,0,1,1,2,2,2,2,2,3,3,3,4,4,5,5,6,6,7,8,9,10,11,12,14,15,17,19,21,23,26,29,32,36,40,45,50,56,62,69,77,86,96,107,119,133,148,165,184,205,229,255};
 
 // a push button used for controlling a LED power supply
 struct PushButton {
@@ -163,6 +165,10 @@ void setup() {
   // serial output for debugging 
   Serial.begin(9600);
 
+  // for turning off power supplies when they are not used
+  pinMode(PSU_PIN, OUTPUT);
+  digitalWrite(PSU_PIN, LOW);
+  
   setupLedSupply(&supply[0],PWM1_PIN,ETOR1_PIN,ETOR2_PIN);
   setupLedSupply(&supply[1],PWM2_PIN,ETOR3_PIN,ETOR4_PIN);
   setupLedSupply(&supply[2],PWM3_PIN,ETOR5_PIN,ETOR6_PIN);
@@ -176,6 +182,8 @@ void loop() {
   
   processLedSupply(&supply[0]);
   processLedSupply(&supply[1]);
-  processLedSupply(&supply[2]);  
+  processLedSupply(&supply[2]);
+  
+  digitalWrite(PSU_PIN, (supply[0].value > 0 || supply[1].value > 0 || supply[2].value > 0)?HIGH:LOW);
   delay(30);
 }
